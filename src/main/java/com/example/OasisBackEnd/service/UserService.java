@@ -42,7 +42,7 @@ public class UserService {
         }
 
         var user = new User()
-                .setFullName(input.getFullName())
+                .setName(input.getLastName())
                 .setEmail(input.getEmail())
                 .setPassword(passwordEncoder.encode(input.getPassword()))
                 .setRole(optionalRole.get());

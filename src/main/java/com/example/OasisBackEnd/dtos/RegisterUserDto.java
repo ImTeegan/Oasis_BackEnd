@@ -3,7 +3,16 @@ package com.example.OasisBackEnd.dtos;
 public class RegisterUserDto {
     private String email;
     private String password;
-    private String fullName;
+    private String lastName;
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getEmail() {
         return email;
@@ -23,12 +32,12 @@ public class RegisterUserDto {
         return this;
     }
 
-    public String getFullName() {
-        return fullName;
+    public String getLastName() {
+        return lastName;
     }
 
-    public RegisterUserDto setFullName(String fullName) {
-        this.fullName = fullName;
+    public RegisterUserDto setLastName(String lastName) {
+        this.lastName = lastName;
         return this;
     }
 
@@ -37,7 +46,7 @@ public class RegisterUserDto {
         return "RegisterUserDto{" +
                 "email='" + email + '\'' +
                 ", password='" + password + '\'' +
-                ", fullName='" + fullName + '\'' +
+                ", lastName='" + lastName + '\'' +
                 '}';
     }
 }
