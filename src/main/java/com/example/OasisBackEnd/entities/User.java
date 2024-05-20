@@ -15,7 +15,7 @@ import java.util.List;
 @Entity
 public class User implements UserDetails {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
     private Integer id;
 
@@ -39,6 +39,8 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String password;
+
+
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
