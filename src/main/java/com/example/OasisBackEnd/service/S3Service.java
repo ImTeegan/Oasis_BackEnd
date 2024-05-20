@@ -23,7 +23,7 @@ public class S3Service {
     private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
 
     public String uploadFile(MultipartFile file) throws IOException {
-        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        String fileName = "product-images/" + System.currentTimeMillis() + "_" + file.getOriginalFilename();
         logger.info("Uploading file with name: " + fileName);
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(file.getSize());
