@@ -7,7 +7,7 @@ public class ProductDTO {
     private String description;
     private String category;
     private String type;
-    private double price;
+    private Double price;
 
     public String getType() {
         return type;
@@ -53,11 +53,11 @@ public class ProductDTO {
         this.description = description;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 

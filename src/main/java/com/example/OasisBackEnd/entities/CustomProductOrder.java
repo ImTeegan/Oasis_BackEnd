@@ -11,7 +11,7 @@ public class CustomProductOrder {
 
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    private Orders orders;
 
     @ManyToOne
     @JoinColumn(name = "custom_product_id", nullable = false)

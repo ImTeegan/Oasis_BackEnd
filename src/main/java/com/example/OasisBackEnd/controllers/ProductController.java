@@ -8,10 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/products")
@@ -27,6 +29,7 @@ public class ProductController {
 
 
     @PostMapping("/add")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Product> addProduct(@RequestParam("name") String name,
                                               @RequestParam("description") String description,
                                               @RequestParam("category") String category,
@@ -47,5 +50,56 @@ public class ProductController {
         Product product = productService.createProduct(productDTO);
         logger.info("Product created with ID: " + product.getId());
         return ResponseEntity.ok(product);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProductDTO>> getAllProducts() {
+        List<ProductDTO> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
+    }
+
+    // Método para obtener un producto por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable Integer id) {
+        ProductDTO product = productService.getProductById(id);
+        return ResponseEntity.ok(product);
+    }
+
+    // Método para eliminar un producto por ID
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<Void> deleteProductById(@PathVariable Integer id) {
+        ProductDTO product = productService.getProductById(id);
+        s3Service.deleteFile(product.getImageUrl());
+        productService.deleteProductById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Método para actualizar un producto por ID
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ProductDTO> updateProductById(@PathVariable Integer id,
+                                                        @RequestParam(required = false) String name,
+                                                        @RequestParam(required = false) String description,
+                                                        @RequestParam(required = false) String category,
+                                                        @RequestParam(required = false) String type,
+                                                        @RequestParam(required = false) Double price,
+                                                        @RequestParam(required = false) MultipartFile image) throws IOException {
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setName(name);
+        productDTO.setDescription(description);
+        productDTO.setCategory(category);
+        productDTO.setType(type);
+        productDTO.setPrice(price);
+
+        if (image != null) {
+            ProductDTO existingProduct = productService.getProductById(id);
+            s3Service.deleteFile(existingProduct.getImageUrl());
+            String imageUrl = s3Service.uploadFile(image);
+            productDTO.setImageUrl(imageUrl);
+        }
+
+        ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
+        return ResponseEntity.ok(updatedProduct);
     }
 }

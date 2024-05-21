@@ -34,4 +34,11 @@ public class S3Service {
         logger.info("File uploaded to URL: " + fileUrl);
         return fileUrl;
     }
+
+    public void deleteFile(String fileUrl) {
+        // Extraer la ruta relativa del archivo en el bucket S3
+        String fileName = fileUrl.substring(fileUrl.indexOf("product-images/"));
+        logger.info("Deleting file with name: " + fileName);
+        s3Client.deleteObject(bucketName, fileName);
+    }
 }
