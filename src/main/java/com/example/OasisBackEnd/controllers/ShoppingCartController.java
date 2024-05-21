@@ -1,7 +1,10 @@
 // File: ShoppingCartController.java
 package com.example.OasisBackEnd.controllers;
 
+import com.example.OasisBackEnd.dtos.AddProductToCartRequest;
+import com.example.OasisBackEnd.dtos.ProductDTO;
 import com.example.OasisBackEnd.dtos.ShoppingCartDTO;
+import com.example.OasisBackEnd.dtos.ShoppingCartProductDTO;
 import com.example.OasisBackEnd.service.ShoppingCartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,5 +45,50 @@ public class ShoppingCartController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public void deleteShoppingCart(@PathVariable Integer id) {
         shoppingCartService.deleteShoppingCartById(id);
+    }
+
+    @PostMapping("/addProduct")
+    public ShoppingCartProductDTO addProductToCart(@RequestBody AddProductToCartRequest request, Authentication authentication) {
+        return shoppingCartService.addProductToCart(request, authentication);
+    }
+
+    @PutMapping("/reduceProduct/{productId}")
+    public ShoppingCartProductDTO reduceProductQuantity(@PathVariable Integer productId, Authentication authentication) {
+        return shoppingCartService.reduceProductQuantity(productId, authentication);
+    }
+
+    @DeleteMapping("/removeProduct/{productId}")
+    public void removeProductFromCart(@PathVariable Integer productId, Authentication authentication) {
+        shoppingCartService.removeProductFromCart(productId, authentication);
+    }
+
+    @GetMapping("/products")
+    public List<ShoppingCartProductDTO> getProductsByShoppingCart(Authentication authentication) {
+        return shoppingCartService.getProductsByShoppingCart(authentication);
+    }
+
+    @GetMapping("/productTotal/{productId}")
+    public Double getTotalByProduct(@PathVariable Integer productId, Authentication authentication) {
+        return shoppingCartService.getTotalByProduct(productId, authentication);
+    }
+
+    @GetMapping("/totalCount")
+    public Long getTotalCountProducts(Authentication authentication) {
+        return shoppingCartService.getTotalCountProducts(authentication);
+    }
+
+    @GetMapping("/totalItems")
+    public Long getTotalItems(Authentication authentication) {
+        return shoppingCartService.getTotalItems(authentication);
+    }
+
+    @GetMapping("/productsInfo")
+    public List<ProductDTO> getProductsInfoByShoppingCart(Authentication authentication) {
+        return shoppingCartService.getProductsInfoByShoppingCart(authentication);
+    }
+
+    @DeleteMapping("/clearAll")
+    public void clearShoppingCart(Authentication authentication) {
+        shoppingCartService.clearShoppingCart(authentication);
     }
 }

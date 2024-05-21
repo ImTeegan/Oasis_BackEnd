@@ -1,11 +1,10 @@
 package com.example.OasisBackEnd.service;
 
 import com.example.OasisBackEnd.dtos.OrderDTO;
-import com.example.OasisBackEnd.entities.Orders;
-import com.example.OasisBackEnd.entities.OrderStatus;
-import com.example.OasisBackEnd.entities.Product;
-import com.example.OasisBackEnd.entities.User;
+import com.example.OasisBackEnd.entities.*;
+import com.example.OasisBackEnd.repositories.OrderProductRepository;
 import com.example.OasisBackEnd.repositories.OrderRepository;
+import com.example.OasisBackEnd.repositories.ShoppingCartProductRepository;
 import com.example.OasisBackEnd.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -28,6 +27,12 @@ public class OrderService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ShoppingCartProductRepository shoppingCartProductRepository;
+
+    @Autowired
+    private OrderProductRepository orderProductRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     // Método para crear una orden
@@ -49,12 +54,29 @@ public class OrderService {
         orders.setCost(orderDTO.getCost());
         orders.setCard(orderDTO.getCard());
 
-        user.getOrders().add(orders);
-        // Asigna otros campos necesarios
+        // Save the order
+        Orders savedOrder = orderRepository.save(orders);
 
-        logger.info("Saving order: " + orders);
-        Orders savedOrders = orderRepository.save(orders);
-        return convertToOrderDTO(savedOrders);
+        // Retrieve products from the user's shopping cart
+        ShoppingCart shoppingCart = user.getShoppingCart();
+        List<ShoppingCartProduct> cartProducts = shoppingCartProductRepository.findByShoppingCart(shoppingCart);
+
+        // Transfer products to the OrderProduct table
+        List<OrderProduct> orderProducts = cartProducts.stream().map(cartProduct -> {
+            OrderProduct orderProduct = new OrderProduct();
+            orderProduct.setOrders(savedOrder);
+            orderProduct.setProduct(cartProduct.getProduct());
+            orderProduct.setQuantity(cartProduct.getQuantity());
+            return orderProduct;
+        }).collect(Collectors.toList());
+
+        // Save the order products
+        orderProductRepository.saveAll(orderProducts);
+
+        // Remove products from the shopping cart
+        shoppingCartProductRepository.deleteAll(cartProducts);
+
+        return convertToOrderDTO(savedOrder);
     }
 
     @Transactional
