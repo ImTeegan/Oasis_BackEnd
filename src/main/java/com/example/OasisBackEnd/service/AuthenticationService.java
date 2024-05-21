@@ -2,14 +2,14 @@ package com.example.OasisBackEnd.service;
 
 import com.example.OasisBackEnd.dtos.LoginUserDto;
 import com.example.OasisBackEnd.dtos.RegisterUserDto;
-import com.example.OasisBackEnd.entities.Role;
-import com.example.OasisBackEnd.entities.RoleEnum;
-import com.example.OasisBackEnd.entities.User;
+import com.example.OasisBackEnd.entities.*;
 import com.example.OasisBackEnd.exceptions.registrationUser.InvalidEmailFormat;
 import com.example.OasisBackEnd.exceptions.registrationUser.InvalidPasswordFormatException;
 import com.example.OasisBackEnd.exceptions.registrationUser.UserAlreadyExistsException;
 import com.example.OasisBackEnd.repositories.RoleRepository;
+import com.example.OasisBackEnd.repositories.ShoppingCartRepository;
 import com.example.OasisBackEnd.repositories.UserRepository;
+import com.example.OasisBackEnd.repositories.WishListRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,6 +28,8 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final S3Service s3Service;
+    private final ShoppingCartRepository shoppingCartRepository;
+    private final WishListRepository wishlistRepository;
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$");
     private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}$");
@@ -38,13 +40,17 @@ public class AuthenticationService {
         RoleRepository roleRepository,
         AuthenticationManager authenticationManager,
         PasswordEncoder passwordEncoder,
-        S3Service s3Service
+        S3Service s3Service,
+        ShoppingCartRepository shoppingCartRepository,
+        WishListRepository wishlistRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.s3Service = s3Service;
+        this.shoppingCartRepository = shoppingCartRepository;
+        this.wishlistRepository = wishlistRepository;
     }
 
     public User signup(RegisterUserDto input) {
@@ -64,7 +70,22 @@ public class AuthenticationService {
                 .setRole(optionalRole.get())
                 .setLastName(input.getLastName());
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+
+        ShoppingCart shoppingCart = new ShoppingCart();
+        shoppingCart.setUser(savedUser);
+        shoppingCart.setTotal(0.0); // Ensure the total is set
+        shoppingCartRepository.save(shoppingCart);
+        savedUser.setShoppingCart(shoppingCart);
+
+        // Create and associate Wishlist
+        WishList wishlist = new WishList();
+        wishlist.setUser(user);
+        wishlist.setTotal(0.0);
+        wishlistRepository.save(wishlist);
+        savedUser.setWishlist(wishlist);
+
+        return userRepository.save(savedUser);
     }
 
     private void validateEmail(String email) {

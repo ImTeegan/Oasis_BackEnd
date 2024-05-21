@@ -1,5 +1,6 @@
 package com.example.OasisBackEnd.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -53,6 +54,32 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id", nullable = false)
     private Role role;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "shopping_cart_id", referencedColumnName = "id")
+    @JsonManagedReference
+    private ShoppingCart shoppingCart;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "wishlist_id", referencedColumnName = "id")
+    @JsonManagedReference
+    private WishList wishlist;
+
+    public ShoppingCart getShoppingCart() {
+        return shoppingCart;
+    }
+
+    public void setShoppingCart(ShoppingCart shoppingCart) {
+        this.shoppingCart = shoppingCart;
+    }
+
+    public WishList getWishlist() {
+        return wishlist;
+    }
+
+    public void setWishlist(WishList wishlist) {
+        this.wishlist = wishlist;
+    }
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Orders> orders;
