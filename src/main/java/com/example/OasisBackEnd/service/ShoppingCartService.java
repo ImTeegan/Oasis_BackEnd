@@ -259,6 +259,7 @@ public class ShoppingCartService {
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
         User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
         ShoppingCart shoppingCart = shoppingCartRepository.findById(user.getShoppingCart().getId()).orElseThrow(() -> new IllegalArgumentException("Shopping cart not found"));
+        shoppingCart.setTotal(0.0);
 
         shoppingCartProductRepository.deleteByShoppingCart(shoppingCart);
     }

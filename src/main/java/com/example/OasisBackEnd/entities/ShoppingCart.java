@@ -19,6 +19,12 @@ public class ShoppingCart {
     @JsonBackReference
     private User user;
 
+    @OneToMany(mappedBy = "shoppingCart")
+    private List<ShoppingCartProduct> shoppingCartProducts;
+
+    @OneToMany(mappedBy = "shoppingCart")
+    private List<CustomProductShoppingCart> customProductShoppingCarts;
+
     public Integer getId() {
         return id;
     }
@@ -59,11 +65,7 @@ public class ShoppingCart {
         this.customProductShoppingCarts = customProductShoppingCarts;
     }
 
-    @OneToMany(mappedBy = "shoppingCart")
-    private List<ShoppingCartProduct> shoppingCartProducts;
 
-    @OneToMany(mappedBy = "shoppingCart")
-    private List<CustomProductShoppingCart> customProductShoppingCarts;
 
     // Getters and setters
 }

@@ -10,6 +10,8 @@ public class CustomProduct {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+
+
     @OneToMany(mappedBy = "customProduct")
     private List<CustomProductItem> customProductItems;
 

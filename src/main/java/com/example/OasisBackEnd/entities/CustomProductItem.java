@@ -17,5 +17,28 @@ public class CustomProductItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    // Getters and setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public CustomProduct getCustomProduct() {
+        return customProduct;
+    }
+
+    public void setCustomProduct(CustomProduct customProduct) {
+        this.customProduct = customProduct;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+// Getters and setters
 }
