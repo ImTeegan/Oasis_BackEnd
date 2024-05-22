@@ -1,6 +1,8 @@
 package com.example.OasisBackEnd.service;
 
 import com.example.OasisBackEnd.dtos.OrderDTO;
+import com.example.OasisBackEnd.dtos.OrderProductDTO;
+import com.example.OasisBackEnd.dtos.ProductDTO;
 import com.example.OasisBackEnd.entities.*;
 import com.example.OasisBackEnd.repositories.OrderProductRepository;
 import com.example.OasisBackEnd.repositories.OrderRepository;
@@ -67,6 +69,7 @@ public class OrderService {
             orderProduct.setOrders(savedOrder);
             orderProduct.setProduct(cartProduct.getProduct());
             orderProduct.setQuantity(cartProduct.getQuantity());
+            orderProduct.setPrice(cartProduct.getPrice());
             return orderProduct;
         }).collect(Collectors.toList());
 
@@ -105,12 +108,14 @@ public class OrderService {
     }
 
     // Método para eliminar una orden por ID
+    @Transactional
     public void deleteOrderById(Integer id) {
-        if (orderRepository.existsById(id)) {
-            orderRepository.deleteById(id);
-        } else {
-            throw new IllegalArgumentException("Order not found");
-        }
+        Orders orders = orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        // Delete associated products
+        orderProductRepository.deleteByOrders(orders);
+        // Delete the order
+        orderRepository.deleteById(id);
     }
 
     // Método para actualizar una orden por ID
@@ -158,6 +163,31 @@ public class OrderService {
         return convertToOrderDTO(updatedOrders);
     }
 
+    @Transactional
+    public List<OrderProductDTO> getProductsByOrder(Integer orderId) {
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        List<OrderProduct> orderProducts = orderProductRepository.findByOrders(orders);
+        return orderProducts.stream().map(this::convertToOrderProductDTO).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<ProductDTO> getProductsInfo(Integer orderId) {
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        List<OrderProduct> orderProducts = orderProductRepository.findByOrders(orders);
+        return orderProducts.stream().map(op -> convertToProductDTO(op.getProduct())).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public OrderDTO changeOrderStatus(Integer orderId, String status) {
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        orders.setStatus(OrderStatus.valueOf(status));
+        Orders updatedOrder = orderRepository.save(orders);
+        return convertToOrderDTO(updatedOrder);
+    }
+
     private OrderDTO convertToOrderDTO(Orders orders) {
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setId(orders.getId());
@@ -178,6 +208,28 @@ public class OrderService {
 
 
         return orderDTO;
+    }
+
+    private OrderProductDTO convertToOrderProductDTO(OrderProduct orderProduct) {
+        OrderProductDTO orderProductDTO = new OrderProductDTO();
+        orderProductDTO.setId(orderProduct.getId());
+        orderProductDTO.setOrdersId(orderProduct.getOrders().getId());
+        orderProductDTO.setProductId(orderProduct.getProduct().getId());
+        orderProductDTO.setQuantity(orderProduct.getQuantity());
+        orderProductDTO.setPrice(orderProductDTO.getPrice());
+        return orderProductDTO;
+    }
+
+    private ProductDTO convertToProductDTO(Product product) {
+        ProductDTO productDTO = new ProductDTO();
+        productDTO.setId(product.getId().longValue());
+        productDTO.setName(product.getName());
+        productDTO.setDescription(product.getDescription());
+        productDTO.setPrice(product.getPrice());
+        productDTO.setCategory(product.getCategory());
+        productDTO.setType(product.getType());
+        productDTO.setImageUrl(product.getImageUrl());
+        return productDTO;
     }
 
    /* private OrderProductDTO convertToOrderProductDTO(OrderProduct orderProduct) {

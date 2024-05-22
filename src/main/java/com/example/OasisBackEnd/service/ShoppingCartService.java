@@ -124,6 +124,10 @@ public class ShoppingCartService {
             shoppingCartProduct.setPrice(product.getPrice());
         }
 
+        shoppingCart.setTotal(shoppingCart.getTotal() + (product.getPrice() * request.getQuantity()));
+        shoppingCartProductRepository.save(shoppingCartProduct);
+        shoppingCartRepository.save(shoppingCart);
+
         shoppingCartProductRepository.save(shoppingCartProduct);
 
         return convertToShoppingCartProductDTO(shoppingCartProduct);
@@ -142,10 +146,32 @@ public class ShoppingCartService {
 
         if (shoppingCartProduct.getQuantity() > 1) {
             shoppingCartProduct.setQuantity(shoppingCartProduct.getQuantity() - 1);
+            shoppingCart.setTotal(shoppingCart.getTotal() - shoppingCartProduct.getPrice());
             shoppingCartProductRepository.save(shoppingCartProduct);
         } else {
+            shoppingCart.setTotal(shoppingCart.getTotal() - shoppingCartProduct.getPrice());
+            shoppingCart.getShoppingCartProducts().remove(shoppingCartProduct);
             shoppingCartProductRepository.delete(shoppingCartProduct);
         }
+
+        return convertToShoppingCartProductDTO(shoppingCartProduct);
+    }
+
+    @Transactional
+    public ShoppingCartProductDTO increaseProductQuantity(Integer productId, Authentication authentication) {
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        ShoppingCart shoppingCart = shoppingCartRepository.findById(user.getShoppingCart().getId()).orElseThrow(() -> new IllegalArgumentException("Shopping cart not found"));
+
+        Product product = productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        ShoppingCartProduct shoppingCartProduct = shoppingCartProductRepository.findByShoppingCartAndProduct(shoppingCart, product)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found in cart"));
+
+        shoppingCartProduct.setQuantity(shoppingCartProduct.getQuantity() + 1);
+        shoppingCart.setTotal(shoppingCart.getTotal() + shoppingCartProduct.getPrice());
+        shoppingCartProductRepository.save(shoppingCartProduct);
+        shoppingCartRepository.save(shoppingCart);
 
         return convertToShoppingCartProductDTO(shoppingCartProduct);
     }
@@ -161,7 +187,19 @@ public class ShoppingCartService {
         ShoppingCartProduct shoppingCartProduct = shoppingCartProductRepository.findByShoppingCartAndProduct(shoppingCart, product)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found in cart"));
 
+        shoppingCart.setTotal(shoppingCart.getTotal() - (shoppingCartProduct.getPrice() * shoppingCartProduct.getQuantity()));
+        shoppingCart.getShoppingCartProducts().remove(shoppingCartProduct);
         shoppingCartProductRepository.delete(shoppingCartProduct);
+        shoppingCartRepository.save(shoppingCart);
+    }
+
+    @Transactional
+    public Double getTotalInShoppingCart(Authentication authentication) {
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        ShoppingCart shoppingCart = shoppingCartRepository.findById(user.getShoppingCart().getId()).orElseThrow(() -> new IllegalArgumentException("Shopping cart not found"));
+
+        return shoppingCart.getTotal();
     }
 
     public List<ShoppingCartProductDTO> getProductsByShoppingCart(Authentication authentication) {

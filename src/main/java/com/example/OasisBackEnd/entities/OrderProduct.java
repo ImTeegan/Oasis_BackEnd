@@ -20,6 +20,17 @@ public class OrderProduct {
     @Column(nullable = false)
     private Integer quantity;
 
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    @Column(nullable = false)
+    private Double price;
+
     public Integer getId() {
         return id;
     }

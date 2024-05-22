@@ -57,6 +57,11 @@ public class ShoppingCartController {
         return shoppingCartService.reduceProductQuantity(productId, authentication);
     }
 
+    @PutMapping("/increaseProduct/{productId}")
+    public ShoppingCartProductDTO increaseProductQuantity(@PathVariable Integer productId, Authentication authentication) {
+        return shoppingCartService.increaseProductQuantity(productId, authentication);
+    }
+
     @DeleteMapping("/removeProduct/{productId}")
     public void removeProductFromCart(@PathVariable Integer productId, Authentication authentication) {
         shoppingCartService.removeProductFromCart(productId, authentication);
@@ -91,4 +96,10 @@ public class ShoppingCartController {
     public void clearShoppingCart(Authentication authentication) {
         shoppingCartService.clearShoppingCart(authentication);
     }
+
+    @GetMapping("/total")
+    public Double getTotalInShoppingCart(Authentication authentication) {
+        return shoppingCartService.getTotalInShoppingCart(authentication);
+    }
+
 }

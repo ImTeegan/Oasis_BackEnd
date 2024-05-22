@@ -1,6 +1,9 @@
 package com.example.OasisBackEnd.controllers;
 
 import com.example.OasisBackEnd.dtos.OrderDTO;
+import com.example.OasisBackEnd.dtos.OrderProductDTO;
+import com.example.OasisBackEnd.dtos.ProductDTO;
+import com.example.OasisBackEnd.entities.OrderProduct;
 import com.example.OasisBackEnd.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -60,5 +63,21 @@ public class OrderController {
     public ResponseEntity<List<OrderDTO>> getMyOrders(Authentication authentication) {
         List<OrderDTO> orders = orderService.getOrdersByUser(authentication);
         return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/{orderId}/products")
+    public List<OrderProductDTO> getProductsByOrder(@PathVariable Integer orderId) {
+        return orderService.getProductsByOrder(orderId);
+    }
+
+    @GetMapping("/{orderId}/productsInfo")
+    public List<ProductDTO> getProductsInfo(@PathVariable Integer orderId) {
+        return orderService.getProductsInfo(orderId);
+    }
+
+    @PutMapping("/{orderId}/changeStatus")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public OrderDTO changeOrderStatus(@PathVariable Integer orderId, @RequestParam String status) {
+        return orderService.changeOrderStatus(orderId, status);
     }
 }
