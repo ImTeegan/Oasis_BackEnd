@@ -8,6 +8,7 @@ public class ProductDTO {
     private String category;
     private String type;
     private Double price;
+    private String imageUrl;
 
     public String getType() {
         return type;
@@ -25,7 +26,7 @@ public class ProductDTO {
         this.category = category;
     }
 
-    private String imageUrl;
+
 
     // Getters y Setters
 

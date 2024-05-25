@@ -22,14 +22,6 @@ public class WishList {
     @OneToMany(mappedBy = "wishList")
     private Set<WishListProduct> wishListProducts;
 
-    public Set<CustomProductWishlist> getCustomProductWishlists() {
-        return customProductWishlists;
-    }
-
-    public void setCustomProductWishlists(Set<CustomProductWishlist> customProductWishlists) {
-        this.customProductWishlists = customProductWishlists;
-    }
-
     public Set<WishListProduct> getWishListProducts() {
         return wishListProducts;
     }
@@ -62,8 +54,7 @@ public class WishList {
         this.id = id;
     }
 
-    @OneToMany(mappedBy = "wishList")
-    private Set<CustomProductWishlist> customProductWishlists;
+
 
     // Getters and setters
 }

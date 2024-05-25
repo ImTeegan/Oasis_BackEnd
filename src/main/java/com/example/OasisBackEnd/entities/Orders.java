@@ -51,9 +51,6 @@ public class Orders {
     @OneToMany(mappedBy = "orders")
     private List<OrderProduct> orderProducts;
 
-    @OneToMany(mappedBy = "orders")
-    private List<CustomProductOrder> customProductOrders;
-
     public Integer getId() {
         return id;
     }
@@ -156,14 +153,6 @@ public class Orders {
 
     public void setOrderProducts(List<OrderProduct> orderProducts) {
         this.orderProducts = orderProducts;
-    }
-
-    public List<CustomProductOrder> getCustomProductOrders() {
-        return customProductOrders;
-    }
-
-    public void setCustomProductOrders(List<CustomProductOrder> customProductOrders) {
-        this.customProductOrders = customProductOrders;
     }
 
 

@@ -6,6 +6,15 @@ public class ShoppingCartProductDTO {
     private Integer shoppingCartId;
     private Integer quantity;
     private Double price;
+    private ProductDTO product;
+
+    public ProductDTO getProduct() {
+        return product;
+    }
+
+    public void setProduct(ProductDTO product) {
+        this.product = product;
+    }
 
     public Integer getId() {
         return id;

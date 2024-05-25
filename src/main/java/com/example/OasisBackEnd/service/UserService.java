@@ -9,10 +9,13 @@ import com.example.OasisBackEnd.entities.RoleEnum;
 import com.example.OasisBackEnd.entities.User;
 import com.example.OasisBackEnd.repositories.RoleRepository;
 import com.example.OasisBackEnd.repositories.UserRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +41,14 @@ public class UserService {
         userRepository.findAll().forEach(users::add);
 
         return users.stream().map(this::convertToUserDTO).collect(Collectors.toList());
+    }
+
+    @GetMapping("/me/name")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> getAuthenticatedUserName(Authentication authentication) {
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        return ResponseEntity.ok(user.getName());
     }
 
     public User createAdministrator(RegisterUserDto input) {
@@ -104,10 +115,9 @@ public class UserService {
         userDTO.setName(user.getName());
         userDTO.setLastName(user.getLastName());
         userDTO.setEmail(user.getEmail());
+        userDTO.setRole(user.getRole().getName().name());
         userDTO.setCreatedAt(user.getCreatedAt());
         userDTO.setUpdatedAt(user.getUpdatedAt());
-
-
         return userDTO;
     }
 }

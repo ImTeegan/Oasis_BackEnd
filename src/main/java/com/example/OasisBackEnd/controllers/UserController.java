@@ -28,6 +28,14 @@ public class UserController {
         return ResponseEntity.ok(currentUser);
     }
 
+    @GetMapping("/me/name")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<String> getAuthenticatedUserName(Authentication authentication) {
+        UserDTO currentUser = userService.getAuthenticatedUserDTO(authentication);
+        return ResponseEntity.ok(currentUser.getName());
+    }
+
+
     @GetMapping("/test")
     @PreAuthorize("isAuthenticated()")
     public String testing (){

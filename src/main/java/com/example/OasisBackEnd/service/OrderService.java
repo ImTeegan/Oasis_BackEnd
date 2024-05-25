@@ -4,10 +4,7 @@ import com.example.OasisBackEnd.dtos.OrderDTO;
 import com.example.OasisBackEnd.dtos.OrderProductDTO;
 import com.example.OasisBackEnd.dtos.ProductDTO;
 import com.example.OasisBackEnd.entities.*;
-import com.example.OasisBackEnd.repositories.OrderProductRepository;
-import com.example.OasisBackEnd.repositories.OrderRepository;
-import com.example.OasisBackEnd.repositories.ShoppingCartProductRepository;
-import com.example.OasisBackEnd.repositories.UserRepository;
+import com.example.OasisBackEnd.repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,6 +32,9 @@ public class OrderService {
     @Autowired
     private OrderProductRepository orderProductRepository;
 
+    @Autowired
+    private CustomProductRepository customProductRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     // Método para crear una orden
@@ -42,6 +42,10 @@ public class OrderService {
     public OrderDTO createOrder(OrderDTO orderDTO, Authentication authentication) {
         String username = ((UserDetails) authentication.getPrincipal()).getUsername();
         User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!validateCardNumber(orderDTO.getCard())) {
+            throw new IllegalArgumentException("Invalid card number");
+        }
 
         Orders orders = new Orders();
         orders.setUser(user);
@@ -54,7 +58,7 @@ public class OrderService {
         orders.setCardHolder(orderDTO.getCardHolder());
         orders.setStatus(OrderStatus.valueOf(orderDTO.getStatus()));
         orders.setCost(orderDTO.getCost());
-        orders.setCard(orderDTO.getCard());
+        orders.setCard(getLast4Digits(orderDTO.getCard()));
 
         // Save the order
         Orders savedOrder = orderRepository.save(orders);
@@ -73,13 +77,41 @@ public class OrderService {
             return orderProduct;
         }).collect(Collectors.toList());
 
-        // Save the order products
         orderProductRepository.saveAll(orderProducts);
 
-        // Remove products from the shopping cart
         shoppingCartProductRepository.deleteAll(cartProducts);
 
+        // Find CustomProducts with contextType SHOPPINGCART and contextId matching the user's shopping cart ID
+        List<CustomProduct> customProducts = customProductRepository.findByContextTypeAndContextId(ContextCustomProduct.SHOPPINGCART, shoppingCart.getId());
+
+        // Update contextType and contextId for the found CustomProducts
+        customProducts.forEach(customProduct -> {
+            customProduct.setContextType(ContextCustomProduct.ORDER);
+            customProduct.setContextId(savedOrder.getId());
+        });
+
+        shoppingCart.setTotal(0.0);
+
+
+
+        customProductRepository.saveAll(customProducts);
+
         return convertToOrderDTO(savedOrder);
+    }
+
+    private boolean validateCardNumber(String cardNumber) {
+        String visaRegex = "^4[0-9]{12}(?:[0-9]{3})?$";
+        String mastercardRegex = "^5[1-5][0-9]{14}$";
+        String amexRegex = "^3[47][0-9]{13}$";
+
+        return cardNumber.matches(visaRegex) || cardNumber.matches(mastercardRegex) || cardNumber.matches(amexRegex);
+    }
+
+    private String getLast4Digits(String cardNumber) {
+        if (cardNumber.length() >= 4) {
+            return cardNumber.substring(cardNumber.length() - 4);
+        }
+        return cardNumber;
     }
 
     @Transactional

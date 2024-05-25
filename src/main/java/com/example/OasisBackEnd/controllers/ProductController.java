@@ -7,6 +7,7 @@ import com.example.OasisBackEnd.service.S3Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -101,5 +102,32 @@ public class ProductController {
 
         ProductDTO updatedProduct = productService.updateProduct(id, productDTO);
         return ResponseEntity.ok(updatedProduct);
+    }
+
+    @GetMapping("/getAllTypeProducts")
+    public ResponseEntity<Page<ProductDTO>> getAllTypeProducts(
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "categories", required = false) List<String> categories,
+            @RequestParam(value = "sort", required = false) String sort,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "12") int size) {
+
+        Page<ProductDTO> products = productService.getProducts(search, categories, sort, page, size);
+        return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/getAllFlowerItem")
+    public List<ProductDTO> getAllFlowerItem() {
+        return productService.getAllCategoryProducts("Flor");
+    }
+
+    @GetMapping("/getAllPaperItem")
+    public List<ProductDTO> getAllPaperItem() {
+        return productService.getAllCategoryProducts("Papel");
+    }
+
+    @GetMapping("/getAllFoliageItem")
+    public List<ProductDTO> getAllFoliageItem() {
+        return productService.getAllCategoryProducts("Follaje");
     }
 }

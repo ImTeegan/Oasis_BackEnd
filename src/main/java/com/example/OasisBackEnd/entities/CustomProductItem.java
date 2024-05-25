@@ -10,12 +10,18 @@ public class CustomProductItem {
     private Integer id;
 
     @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
+    @ManyToOne
     @JoinColumn(name = "custom_product_id", nullable = false)
     private CustomProduct customProduct;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(name = "price")
+    private Double price;
+
+// Getters and setters
+
 
     public Integer getId() {
         return id;
@@ -23,6 +29,14 @@ public class CustomProductItem {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public CustomProduct getCustomProduct() {
@@ -33,12 +47,11 @@ public class CustomProductItem {
         this.customProduct = customProduct;
     }
 
-    public Product getProduct() {
-        return product;
+    public Double getPrice() {
+        return price;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setPrice(Double price) {
+        this.price = price;
     }
-// Getters and setters
 }

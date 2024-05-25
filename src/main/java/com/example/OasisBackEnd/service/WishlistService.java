@@ -40,6 +40,9 @@ public class WishlistService {
     @Autowired
     private ShoppingCartRepository shoppingCartRepository;
 
+    @Autowired
+    private CustomProductRepository customProductRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(WishlistService.class);
 
     @Transactional
@@ -298,6 +301,16 @@ public class WishlistService {
             }
         });
 
+        // Actualizar los CustomProducts relacionados con la WishList del usuario
+        List<CustomProduct> customProducts = customProductRepository.findByContextTypeAndContextId(ContextCustomProduct.WISHLIST, wishList.getId());
+
+        customProducts.forEach(customProduct -> {
+            customProduct.setContextType(ContextCustomProduct.SHOPPINGCART);
+            customProduct.setContextId(shoppingCart.getId());
+            customProductRepository.save(customProduct);
+            shoppingCart.setTotal(shoppingCart.getTotal() + (customProduct.getTotalCost()) * customProduct.getQuantity());
+        });
+
         shoppingCartRepository.save(shoppingCart);
     }
 
@@ -328,6 +341,15 @@ public class WishlistService {
                 shoppingCart.setTotal(shoppingCart.getTotal() + (wishListProduct.getPrice() * wishListProduct.getQuantity()));
                 shoppingCartProductRepository.save(shoppingCartProduct);
             }
+        });
+
+        List<CustomProduct> customProducts = customProductRepository.findByContextTypeAndContextId(ContextCustomProduct.WISHLIST, wishList.getId());
+
+        customProducts.forEach(customProduct -> {
+            customProduct.setContextType(ContextCustomProduct.SHOPPINGCART);
+            customProduct.setContextId(shoppingCart.getId());
+            customProductRepository.save(customProduct);
+            shoppingCart.setTotal(shoppingCart.getTotal() + (customProduct.getTotalCost()) * customProduct.getQuantity());
         });
 
         shoppingCartRepository.save(shoppingCart);

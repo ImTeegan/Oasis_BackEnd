@@ -5,6 +5,10 @@ import com.example.OasisBackEnd.entities.Product;
 import com.example.OasisBackEnd.entities.User;
 import com.example.OasisBackEnd.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +46,38 @@ public class ProductService {
         return products.stream()
                 .map(this::convertToProductDTO)
                 .collect(Collectors.toList());
+    }
+
+    public Page<ProductDTO> getProducts(String name, List<String> categories, String sort, int page, int size) {
+        Pageable pageable;
+        if (sort != null && !sort.isEmpty()) {
+            if (sort.equals("lowToHigh")) {
+                pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "price"));
+            } else if (sort.equals("highToLow")) {
+                pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "price"));
+            } else {
+                pageable = PageRequest.of(page, size);
+            }
+        } else {
+            pageable = PageRequest.of(page, size);
+        }
+
+        Page<Product> productsPage;
+
+        boolean isNamePresent = name != null && !name.isEmpty();
+        boolean areCategoriesPresent = categories != null && !categories.isEmpty();
+
+        if (isNamePresent && areCategoriesPresent) {
+            productsPage = productRepository.findByNameContainingIgnoreCaseAndCategoryInAndType(name, categories, "Product", pageable);
+        } else if (isNamePresent) {
+            productsPage = productRepository.findByNameContainingIgnoreCaseAndType(name, "Product", pageable);
+        } else if (areCategoriesPresent) {
+            productsPage = productRepository.findByCategoryInAndType(categories, "Product", pageable);
+        } else {
+            productsPage = productRepository.findByType("Product", pageable);
+        }
+
+        return productsPage.map(this::convertToProductDTO);
     }
 
     // Método para obtener un producto por ID
@@ -88,6 +124,26 @@ public class ProductService {
         logger.info("Updating product: " + product);
         Product updatedProduct = productRepository.save(product);
         return convertToProductDTO(updatedProduct);
+    }
+
+    public List<ProductDTO> getAllTypeProducts() {
+        List<Product> products = new ArrayList<>();
+
+        productRepository.findAll().forEach(products::add);
+        return products.stream()
+                .filter(product -> product.getType().equalsIgnoreCase("Product"))
+                .map(this::convertToProductDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<ProductDTO> getAllCategoryProducts(String category) {
+        List<Product> products = new ArrayList<>();
+
+        productRepository.findAll().forEach(products::add);
+        return products.stream()
+                .filter(product -> product.getCategory().equalsIgnoreCase(category))
+                .map(this::convertToProductDTO)
+                .collect(Collectors.toList());
     }
 
     private ProductDTO convertToProductDTO(Product product) {

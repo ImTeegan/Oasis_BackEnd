@@ -22,9 +22,6 @@ public class ShoppingCart {
     @OneToMany(mappedBy = "shoppingCart")
     private List<ShoppingCartProduct> shoppingCartProducts;
 
-    @OneToMany(mappedBy = "shoppingCart")
-    private List<CustomProductShoppingCart> customProductShoppingCarts;
-
     public Integer getId() {
         return id;
     }
@@ -57,13 +54,6 @@ public class ShoppingCart {
         this.shoppingCartProducts = shoppingCartProducts;
     }
 
-    public List<CustomProductShoppingCart> getCustomProductShoppingCarts() {
-        return customProductShoppingCarts;
-    }
-
-    public void setCustomProductShoppingCarts(List<CustomProductShoppingCart> customProductShoppingCarts) {
-        this.customProductShoppingCarts = customProductShoppingCarts;
-    }
 
 
 

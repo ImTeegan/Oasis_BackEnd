@@ -1,10 +1,7 @@
 // File: ShoppingCartController.java
 package com.example.OasisBackEnd.controllers;
 
-import com.example.OasisBackEnd.dtos.AddProductToCartRequest;
-import com.example.OasisBackEnd.dtos.ProductDTO;
-import com.example.OasisBackEnd.dtos.ShoppingCartDTO;
-import com.example.OasisBackEnd.dtos.ShoppingCartProductDTO;
+import com.example.OasisBackEnd.dtos.*;
 import com.example.OasisBackEnd.service.ShoppingCartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -72,6 +69,12 @@ public class ShoppingCartController {
         return shoppingCartService.getProductsByShoppingCart(authentication);
     }
 
+    @GetMapping("/allProducts")
+    @PreAuthorize("isAuthenticated()")
+    public CombinedProductDTO getAllProductsGeneral(Authentication authentication) {
+        return shoppingCartService.getAllProductsGeneral(authentication);
+    }
+
     @GetMapping("/productTotal/{productId}")
     public Double getTotalByProduct(@PathVariable Integer productId, Authentication authentication) {
         return shoppingCartService.getTotalByProduct(productId, authentication);
@@ -101,5 +104,10 @@ public class ShoppingCartController {
     public Double getTotalInShoppingCart(Authentication authentication) {
         return shoppingCartService.getTotalInShoppingCart(authentication);
     }
+
+    /*@GetMapping("/validCustomProducts")
+    public List<CustomProductDTO> getValidCustomProducts(Authentication authentication) {
+        return shoppingCartService.getValidCustomProducts(authentication);
+    }*/
 
 }

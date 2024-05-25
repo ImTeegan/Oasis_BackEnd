@@ -10,9 +10,16 @@ public class UserDTO {
     private String email;
     private Date createdAt;
     private Date updatedAt;
+    private String role;
 
+    public String getRole() {
+        return role;
+    }
 
-    // Getters y Setters
+    public void setRole(String role) {
+        this.role = role;
+    }
+// Getters y Setters
 
     public Integer getId() {
         return id;
