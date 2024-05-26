@@ -3,14 +3,10 @@ package com.example.OasisBackEnd.dtos;
 import java.util.Date;
 import java.util.List;
 
-public class OrderDTO {
-
+public class CombinedOrderDTO {
     private Integer id;
     private String orderNumber;
     private Integer userId;
-
-
-
     private Date date;
     private String address1;
     private String address2;
@@ -21,14 +17,10 @@ public class OrderDTO {
     private String status;
     private Double cost;
     private String card;
+    private List<OrderProductDTO> orderProducts;
+    private List<ProductDTO> productDetails;
 
-    public String getOrderNumber() {
-        return orderNumber;
-    }
-
-    public void setOrderNumber(String orderNumber) {
-        this.orderNumber = orderNumber;
-    }
+    // Getters and setters
 
     public Integer getId() {
         return id;
@@ -36,6 +28,14 @@ public class OrderDTO {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
     }
 
     public Integer getUserId() {
@@ -125,6 +125,21 @@ public class OrderDTO {
     public void setCard(String card) {
         this.card = card;
     }
-    // Getters and Setters
-    // (generated automatically)
+
+    public List<OrderProductDTO> getOrderProducts() {
+        return orderProducts;
+    }
+
+    public void setOrderProducts(List<OrderProductDTO> orderProducts) {
+        this.orderProducts = orderProducts;
+    }
+
+    public List<ProductDTO> getProductDetails() {
+        return productDetails;
+    }
+
+    public void setProductDetails(List<ProductDTO> productDetails) {
+        this.productDetails = productDetails;
+    }
+    // ...
 }

@@ -59,6 +59,11 @@ public class ProductController {
         return ResponseEntity.ok(products);
     }
 
+    @GetMapping("/items")
+    public List<ProductDTO> getAllItems() {
+        return productService.getAllItems();
+    }
+
     // Método para obtener un producto por ID
     @GetMapping("/{id}")
     public ResponseEntity<ProductDTO> getProductById(@PathVariable Integer id) {

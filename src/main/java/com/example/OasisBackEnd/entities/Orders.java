@@ -11,6 +11,9 @@ public class Orders {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "order_number" ,nullable = false)
+    private String orderNumber;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -50,6 +53,14 @@ public class Orders {
 
     @OneToMany(mappedBy = "orders")
     private List<OrderProduct> orderProducts;
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
 
     public Integer getId() {
         return id;

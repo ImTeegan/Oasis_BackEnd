@@ -1,5 +1,6 @@
 package com.example.OasisBackEnd.service;
 
+import com.example.OasisBackEnd.dtos.CombinedOrderDTO;
 import com.example.OasisBackEnd.dtos.OrderDTO;
 import com.example.OasisBackEnd.dtos.OrderProductDTO;
 import com.example.OasisBackEnd.dtos.ProductDTO;
@@ -13,8 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +39,10 @@ public class OrderService {
     private CustomProductRepository customProductRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
+
+    private static final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private static final int ORDER_NUMBER_LENGTH = 10;
+    private static final Random RANDOM = new SecureRandom();
 
     // Método para crear una orden
     @Transactional
@@ -59,6 +66,7 @@ public class OrderService {
         orders.setStatus(OrderStatus.valueOf(orderDTO.getStatus()));
         orders.setCost(orderDTO.getCost());
         orders.setCard(getLast4Digits(orderDTO.getCard()));
+        orders.setOrderNumber(generateOrderNumber());
 
         // Save the order
         Orders savedOrder = orderRepository.save(orders);
@@ -98,6 +106,15 @@ public class OrderService {
 
         return convertToOrderDTO(savedOrder);
     }
+
+    private String generateOrderNumber() {
+        StringBuilder sb = new StringBuilder(ORDER_NUMBER_LENGTH);
+        for (int i = 0; i < ORDER_NUMBER_LENGTH; i++) {
+            sb.append(CHARACTERS.charAt(RANDOM.nextInt(CHARACTERS.length())));
+        }
+        return sb.toString();
+    }
+
 
     private boolean validateCardNumber(String cardNumber) {
         String visaRegex = "^4[0-9]{12}(?:[0-9]{3})?$";
@@ -220,9 +237,89 @@ public class OrderService {
         return convertToOrderDTO(updatedOrder);
     }
 
+    @Transactional
+    public List<CombinedOrderDTO> getCombinedOrdersByUser(Authentication authentication) {
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<Orders> ordersList = orderRepository.findByUser(user);
+
+        return ordersList.stream()
+                .map(this::getCombinedOrderDetails)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<CombinedOrderDTO> getAllCombinedOrders() {
+        //List<Orders> ordersList = orderRepository.findAll();
+
+        List<Orders> ordersList = new ArrayList<>();
+
+        orderRepository.findAll().forEach(ordersList::add);
+        return ordersList.stream()
+                .map(this::getCombinedOrderDetails)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public CombinedOrderDTO getCombinedOrderDetails(Integer orderId) {
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        List<OrderProductDTO> orderProducts = getProductsByOrder(orderId);
+        List<ProductDTO> productDetails = getProductsInfo(orderId);
+
+        CombinedOrderDTO combinedOrderDTO = new CombinedOrderDTO();
+        combinedOrderDTO.setId(orders.getId());
+        combinedOrderDTO.setOrderNumber(orders.getOrderNumber());
+        combinedOrderDTO.setUserId(orders.getUser().getId());
+        combinedOrderDTO.setDate(orders.getDate());
+        combinedOrderDTO.setAddress1(orders.getAddress1());
+        combinedOrderDTO.setAddress2(orders.getAddress2());
+        combinedOrderDTO.setProvince(orders.getProvince());
+        combinedOrderDTO.setCity(orders.getCity());
+        combinedOrderDTO.setZipCode(orders.getZipCode());
+        combinedOrderDTO.setCardHolder(orders.getCardHolder());
+        combinedOrderDTO.setStatus(orders.getStatus().name());
+        combinedOrderDTO.setCost(orders.getCost());
+        combinedOrderDTO.setCard(orders.getCard());
+        combinedOrderDTO.setOrderProducts(orderProducts);
+        combinedOrderDTO.setProductDetails(productDetails);
+
+        return combinedOrderDTO;
+    }
+
+    @Transactional
+    public CombinedOrderDTO getCombinedOrderDetails(Orders orders) {
+        Integer orderId = orders.getId();
+        List<OrderProductDTO> orderProducts = getProductsByOrder(orderId);
+        List<ProductDTO> productDetails = getProductsInfo(orderId);
+
+        CombinedOrderDTO combinedOrderDTO = new CombinedOrderDTO();
+        combinedOrderDTO.setId(orders.getId());
+        combinedOrderDTO.setOrderNumber(orders.getOrderNumber());
+        combinedOrderDTO.setUserId(orders.getUser().getId());
+        combinedOrderDTO.setDate(orders.getDate());
+        combinedOrderDTO.setAddress1(orders.getAddress1());
+        combinedOrderDTO.setAddress2(orders.getAddress2());
+        combinedOrderDTO.setProvince(orders.getProvince());
+        combinedOrderDTO.setCity(orders.getCity());
+        combinedOrderDTO.setZipCode(orders.getZipCode());
+        combinedOrderDTO.setCardHolder(orders.getCardHolder());
+        combinedOrderDTO.setStatus(orders.getStatus().name());
+        combinedOrderDTO.setCost(orders.getCost());
+        combinedOrderDTO.setCard(orders.getCard());
+        combinedOrderDTO.setOrderProducts(orderProducts);
+        combinedOrderDTO.setProductDetails(productDetails);
+
+        return combinedOrderDTO;
+    }
+
+
+
     private OrderDTO convertToOrderDTO(Orders orders) {
         OrderDTO orderDTO = new OrderDTO();
         orderDTO.setId(orders.getId());
+        orderDTO.setOrderNumber(orders.getOrderNumber());
         orderDTO.setUserId(orders.getUser().getId());
         orderDTO.setDate(orders.getDate());
         orderDTO.setAddress1(orders.getAddress1());

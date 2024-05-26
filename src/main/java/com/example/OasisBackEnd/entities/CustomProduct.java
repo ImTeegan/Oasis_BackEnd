@@ -9,7 +9,8 @@ import java.util.Set;
 @Table(name = "custom_products")
 public class CustomProduct {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "custom_product_seq")
+    @SequenceGenerator(name = "custom_product_seq", sequenceName = "custom_product_seq", allocationSize = 1, initialValue = 100000)
     private Integer id;
 
     @Column(name = "context_id", nullable = false)

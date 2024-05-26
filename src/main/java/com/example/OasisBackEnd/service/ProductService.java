@@ -97,6 +97,14 @@ public class ProductService {
         }
     }
 
+    public List<ProductDTO> getAllItems() {
+        List<Product> products = productRepository.findByType("Item");
+        return products.stream()
+                .map(this::convertToProductDTO)
+                .collect(Collectors.toList());
+    }
+
+
     // Método para actualizar un producto por ID
     public ProductDTO updateProduct(Integer id, ProductDTO productDTO) {
         Product product = productRepository.findById(id)

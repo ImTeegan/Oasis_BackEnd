@@ -1,5 +1,6 @@
 package com.example.OasisBackEnd.controllers;
 
+import com.example.OasisBackEnd.dtos.CombinedOrderDTO;
 import com.example.OasisBackEnd.dtos.OrderDTO;
 import com.example.OasisBackEnd.dtos.OrderProductDTO;
 import com.example.OasisBackEnd.dtos.ProductDTO;
@@ -29,11 +30,23 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/all-combined-orders")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<CombinedOrderDTO>> getAllCombinedOrders() {
+        List<CombinedOrderDTO> orders = orderService.getAllCombinedOrders();
+        return ResponseEntity.ok(orders);
+    }
+
     // Método para obtener una orden por ID
     @GetMapping("/{id}")
     public ResponseEntity<OrderDTO> getOrderById(@PathVariable Integer id) {
         OrderDTO order = orderService.getOrderById(id);
         return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/{orderId}/details")
+    public CombinedOrderDTO getCombinedOrderDetails(@PathVariable Integer orderId) {
+        return orderService.getCombinedOrderDetails(orderId);
     }
 
     // Método para crear una nueva orden
@@ -60,8 +73,8 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders")
-    public ResponseEntity<List<OrderDTO>> getMyOrders(Authentication authentication) {
-        List<OrderDTO> orders = orderService.getOrdersByUser(authentication);
+    public ResponseEntity<List<CombinedOrderDTO>> getMyOrders(Authentication authentication) {
+        List<CombinedOrderDTO> orders = orderService.getCombinedOrdersByUser(authentication);
         return ResponseEntity.ok(orders);
     }
 
