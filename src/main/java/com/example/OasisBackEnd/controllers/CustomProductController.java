@@ -5,6 +5,7 @@ import com.example.OasisBackEnd.dtos.CustomProductDTO;
 import com.example.OasisBackEnd.dtos.CustomProductItemDTO;
 import com.example.OasisBackEnd.service.CustomProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,7 @@ public class CustomProductController {
 
     @GetMapping("/{id}")
     public CustomProductDTO getCustomProductById(@PathVariable Integer id, Authentication authentication) {
+
         return customProductService.getCustomProductById(id, authentication);
     }
 
@@ -44,6 +46,18 @@ public class CustomProductController {
             @RequestParam String newContextType,
             Authentication authentication) {
         return customProductService.changeCustomProductContextType(customProductId, newContextType, authentication);
+    }
+
+    @DeleteMapping("/{customProductId}/removeItem/{productId}")
+    public CustomProductDTO removeItemFromCustomProduct(@PathVariable Integer customProductId, @PathVariable Integer productId, Authentication authentication) {
+        return customProductService.removeItemFromCustomProduct(customProductId, productId, authentication);
+    }
+
+
+    @GetMapping("/order/{orderId}")
+    public ResponseEntity<List<CustomProductDTO>> getCustomProductsByOrderId(@PathVariable Integer orderId) {
+        List<CustomProductDTO> customProducts = customProductService.getCustomProductsByOrderId(orderId);
+        return ResponseEntity.ok(customProducts);
     }
 
     @DeleteMapping("/{customProductId}")

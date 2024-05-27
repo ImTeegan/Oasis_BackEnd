@@ -90,6 +90,11 @@ public class CustomProductService {
         return customProducts.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    @Transactional
+    public List<CustomProductDTO> getCustomProductsByOrderId(Integer orderId) {
+        List<CustomProduct> customProducts = customProductRepository.findByContextTypeAndContextId(ContextCustomProduct.ORDER, orderId);
+        return customProducts.stream().map(this::convertToDTOWithItems).collect(Collectors.toList());
+    }
 
 
     public CustomProductItemDTO addItemToCustomProduct(AddCustomProductItemRequest request) {
@@ -135,30 +140,7 @@ public class CustomProductService {
         return convertToDTO(savedCustomProductItem);
     }
 
-    public CustomProductDTO getCustomProductById(Integer id, Authentication authentication) {
-        CustomProduct customProduct = customProductRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Custom Product not found"));
-        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
-        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (customProduct.getContextType() == ContextCustomProduct.SHOPPINGCART) {
-            ShoppingCart shoppingCart = shoppingCartRepository.findById(customProduct.getContextId())
-                    .orElseThrow(() -> new RuntimeException("Shopping Cart not found"));
-            if (!shoppingCart.getUser().getId().equals(user.getId())) {
-                throw new RuntimeException("Access denied: Custom Product does not belong to the user's Shopping Cart");
-            }
-        } else if (customProduct.getContextType() == ContextCustomProduct.WISHLIST) {
-            WishList wishList = wishListRepository.findById(customProduct.getContextId())
-                    .orElseThrow(() -> new RuntimeException("WishList not found"));
-            if (!wishList.getUser().getId().equals(user.getId())) {
-                throw new RuntimeException("Access denied: Custom Product does not belong to the user's WishList");
-            }
-        } else {
-            throw new IllegalArgumentException("Invalid context type");
-        }
-
-        return convertToDTO(customProduct);
-    }
 
     @Transactional
     public CustomProductDTO changeCustomProductContextType(Integer customProductId, String newContextType, Authentication authentication) {
@@ -246,6 +228,58 @@ public class CustomProductService {
         return convertToDTO(updatedCustomProduct);
     }
 
+
+    @Transactional
+    public CustomProductDTO removeItemFromCustomProduct(Integer customProductId, Integer productId, Authentication authentication) {
+        CustomProduct customProduct = customProductRepository.findById(customProductId)
+                .orElseThrow(() -> new RuntimeException("Custom Product not found"));
+
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (customProduct.getContextType() == ContextCustomProduct.SHOPPINGCART) {
+            ShoppingCart shoppingCart = shoppingCartRepository.findById(customProduct.getContextId())
+                    .orElseThrow(() -> new RuntimeException("Shopping Cart not found"));
+            if (!shoppingCart.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("Access denied: Custom Product does not belong to the user's Shopping Cart");
+            }
+        } else if (customProduct.getContextType() == ContextCustomProduct.WISHLIST) {
+            WishList wishList = wishListRepository.findById(customProduct.getContextId())
+                    .orElseThrow(() -> new RuntimeException("WishList not found"));
+            if (!wishList.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("Access denied: Custom Product does not belong to the user's WishList");
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid context type");
+        }
+
+        CustomProductItem customProductItem = customProduct.getCustomProductItems().stream()
+                .filter(item -> item.getProduct().getId().equals(productId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Product Item not found in Custom Product"));
+
+        // Adjust the custom product counts and total cost
+        if ("flor".equalsIgnoreCase(customProductItem.getProduct().getCategory())) {
+            customProduct.setFlowerCount(customProduct.getFlowerCount() - 1);
+        } else if ("papel".equalsIgnoreCase(customProductItem.getProduct().getCategory())) {
+            customProduct.setPaperCount(customProduct.getPaperCount() - 1);
+        } else if ("follaje".equalsIgnoreCase(customProductItem.getProduct().getCategory())) {
+            customProduct.setFoliageCount(customProduct.getFoliageCount() - 1);
+        }
+
+        customProduct.setTotalCost(customProduct.getTotalCost() - customProductItem.getPrice());
+
+        // Remove the item
+        customProductItemRepository.delete(customProductItem);
+
+        // Save the updated custom product
+        customProductRepository.save(customProduct);
+
+        return convertToDTOWithItems(customProduct);
+    }
+
+
+
     @Transactional
     public void deleteCustomProduct(Integer customProductId, Authentication authentication) {
         CustomProduct customProduct = customProductRepository.findById(customProductId)
@@ -299,6 +333,33 @@ public class CustomProductService {
         List<CustomProduct> customProducts = customProductRepository.findByContextTypeAndContextId(ContextCustomProduct.WISHLIST, wishList.getId());
 
         return customProducts.stream().map(this::convertToDTOWithItems).collect(Collectors.toList());
+    }
+
+    public CustomProductDTO getCustomProductById(Integer id, Authentication authentication) {
+        CustomProduct customProduct = customProductRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Custom Product not found"));
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (customProduct.getContextType() == ContextCustomProduct.SHOPPINGCART) {
+            ShoppingCart shoppingCart = shoppingCartRepository.findById(customProduct.getContextId())
+                    .orElseThrow(() -> new RuntimeException("Shopping Cart not found"));
+            if (!shoppingCart.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("Access denied: Custom Product does not belong to the user's Shopping Cart");
+            }
+        } else if (customProduct.getContextType() == ContextCustomProduct.WISHLIST) {
+            WishList wishList = wishListRepository.findById(customProduct.getContextId())
+                    .orElseThrow(() -> new RuntimeException("WishList not found"));
+            if (!wishList.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("Access denied: Custom Product does not belong to the user's WishList");
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid context type");
+        }
+
+
+
+        return convertToDTO(customProduct);
     }
 
     private CustomProductDTO convertToDTOWithItems(CustomProduct customProduct) {

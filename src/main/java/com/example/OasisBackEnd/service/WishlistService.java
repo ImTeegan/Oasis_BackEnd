@@ -137,9 +137,12 @@ public class WishlistService {
         User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
         WishList wishList = wishListRepository.findById(user.getWishlist().getId()).orElseThrow(() -> new IllegalArgumentException("Wishlist not found"));
 
-        Product product = productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        //Product product = productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        WishListProduct wishListProduct = wishListProductRepository.findByWishListAndProduct(wishList, product)
+       // WishListProduct wishListProduct = wishListProductRepository.findByWishListAndProduct(wishList, product)
+            //    .orElseThrow(() -> new IllegalArgumentException("Product not found in wishlist"));
+
+        WishListProduct wishListProduct = wishListProductRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found in wishlist"));
 
         if (wishListProduct.getQuantity() > 1) {
@@ -147,9 +150,7 @@ public class WishlistService {
             wishList.setTotal(wishList.getTotal() - wishListProduct.getPrice());
             wishListProductRepository.save(wishListProduct);
         } else {
-            wishList.setTotal(wishList.getTotal() - wishListProduct.getPrice());
-            wishList.getWishListProducts().remove(wishListProduct);
-            wishListProductRepository.delete(wishListProduct);
+            throw new IllegalArgumentException("Cannot decrease quantity below 1");
         }
 
         return convertToWishListProductDTO(wishListProduct);
@@ -161,9 +162,12 @@ public class WishlistService {
         User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
         WishList wishList = wishListRepository.findById(user.getWishlist().getId()).orElseThrow(() -> new IllegalArgumentException("Wishlist not found"));
 
-        Product product = productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        //Product product = productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        WishListProduct wishListProduct = wishListProductRepository.findByWishListAndProduct(wishList, product)
+       // WishListProduct wishListProduct = wishListProductRepository.findByWishListAndProduct(wishList, product)
+         //       .orElseThrow(() -> new IllegalArgumentException("Product not found in wishlist"));
+
+        WishListProduct wishListProduct = wishListProductRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found in wishlist"));
 
         wishListProduct.setQuantity(wishListProduct.getQuantity() + 1);
