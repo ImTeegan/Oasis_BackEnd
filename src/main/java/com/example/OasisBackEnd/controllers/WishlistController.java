@@ -115,11 +115,11 @@ public class WishlistController {
         return wishlistService.getProductsInfoByWishList(authentication);
     }
 
-    @PostMapping("/moveProductsToShoppingCart")
+   /* @PostMapping("/moveProductsToShoppingCart")
     public ResponseEntity<Void> moveProductsToShoppingCart(Authentication authentication) {
         wishlistService.moveProductsToShoppingCart(authentication);
         return ResponseEntity.ok().build();
-    }
+    }*/
 
     @PostMapping("/moveAndDeleteProductsToShoppingCart")
     public ResponseEntity<Void> moveAndDeleteProductsToShoppingCart(Authentication authentication) {

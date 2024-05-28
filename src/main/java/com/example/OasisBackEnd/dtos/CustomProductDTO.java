@@ -6,12 +6,21 @@ public class CustomProductDTO {
     private Integer id;
     private Integer contextId;
     private String contextType;
+    private String name;
     private Double totalCost;
     private Integer quantity;
     private Integer flowerCount;
     private Integer paperCount;
     private Integer foliageCount;
     private List<CustomProductItemDTO> items;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public List<CustomProductItemDTO> getItems() {
         return items;

@@ -49,6 +49,7 @@ public class CustomProductService {
         customProduct.setPaperCount(0);
         customProduct.setTotalCost(0.0);
         customProduct.setQuantity(1);
+        customProduct.setName("Producto Personalizado");
 
         CustomProduct savedCustomProduct = customProductRepository.save(customProduct);
         return convertToDTO(savedCustomProduct);
@@ -143,7 +144,7 @@ public class CustomProductService {
 
 
     @Transactional
-    public CustomProductDTO changeCustomProductContextType(Integer customProductId, String newContextType, Authentication authentication) {
+    public CustomProductDTO changeCustomProductContextType(Integer customProductId, String newContextType, String name, Authentication authentication) {
         CustomProduct customProduct = customProductRepository.findById(customProductId)
                 .orElseThrow(() -> new RuntimeException("Custom Product not found"));
 
@@ -174,6 +175,7 @@ public class CustomProductService {
 
         customProduct.setContextId(contextId);
         customProduct.setContextType(ContextCustomProduct.valueOf(newContextType.toUpperCase()));
+        customProduct.setName(name);
 
         CustomProduct updatedCustomProduct = customProductRepository.save(customProduct);
         return convertToDTO(updatedCustomProduct);
@@ -234,29 +236,11 @@ public class CustomProductService {
         CustomProduct customProduct = customProductRepository.findById(customProductId)
                 .orElseThrow(() -> new RuntimeException("Custom Product not found"));
 
-        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
-        User user = userRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (customProduct.getContextType() == ContextCustomProduct.SHOPPINGCART) {
-            ShoppingCart shoppingCart = shoppingCartRepository.findById(customProduct.getContextId())
-                    .orElseThrow(() -> new RuntimeException("Shopping Cart not found"));
-            if (!shoppingCart.getUser().getId().equals(user.getId())) {
-                throw new RuntimeException("Access denied: Custom Product does not belong to the user's Shopping Cart");
-            }
-        } else if (customProduct.getContextType() == ContextCustomProduct.WISHLIST) {
-            WishList wishList = wishListRepository.findById(customProduct.getContextId())
-                    .orElseThrow(() -> new RuntimeException("WishList not found"));
-            if (!wishList.getUser().getId().equals(user.getId())) {
-                throw new RuntimeException("Access denied: Custom Product does not belong to the user's WishList");
-            }
-        } else {
-            throw new IllegalArgumentException("Invalid context type");
-        }
-
         CustomProductItem customProductItem = customProduct.getCustomProductItems().stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Product Item not found in Custom Product"));
+
 
         // Adjust the custom product counts and total cost
         if ("flor".equalsIgnoreCase(customProductItem.getProduct().getCategory())) {
@@ -408,6 +392,7 @@ public class CustomProductService {
         dto.setFlowerCount(customProduct.getFlowerCount());
         dto.setPaperCount(customProduct.getPaperCount());
         dto.setFoliageCount(customProduct.getFoliageCount());
+        dto.setName(customProduct.getName());
         return dto;
     }
 }

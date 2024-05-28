@@ -45,8 +45,15 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/details")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public CombinedOrderDTO getCombinedOrderDetails(@PathVariable Integer orderId) {
         return orderService.getCombinedOrderDetails(orderId);
+    }
+
+    @GetMapping("/{orderId}/details-user")
+
+    public CombinedOrderDTO getCombinedOrderDetailsUser(@PathVariable Integer orderId, Authentication authentication) {
+        return orderService.getCombinedOrderDetailsUser(orderId, authentication);
     }
 
     // Método para crear una nueva orden

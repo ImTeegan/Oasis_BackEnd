@@ -139,6 +139,8 @@ public class OrderService {
         return orders.stream().map(this::convertToOrderDTO).collect(Collectors.toList());
     }
 
+
+
     // Método para obtener todas las órdenes
     public List<OrderDTO> getAllOrders() {
         List<Orders> orders = new ArrayList<>();
@@ -155,6 +157,8 @@ public class OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         return convertToOrderDTO(orders);
     }
+
+
 
     // Método para eliminar una orden por ID
     @Transactional
@@ -246,6 +250,41 @@ public class OrderService {
         return ordersList.stream()
                 .map(this::getCombinedOrderDetails)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public CombinedOrderDTO getCombinedOrderDetailsUser(Integer orderId, Authentication authentication) {
+        String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+        User user = userRepository.findByEmail(username).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Orders orders = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+        if (orders.getUser().getId() != user.getId()) {
+            throw new IllegalArgumentException("Invalid card number");
+        }
+
+        List<OrderProductDTO> orderProducts = getProductsByOrder(orderId);
+        List<ProductDTO> productDetails = getProductsInfo(orderId);
+
+        CombinedOrderDTO combinedOrderDTO = new CombinedOrderDTO();
+        combinedOrderDTO.setId(orders.getId());
+        combinedOrderDTO.setOrderNumber(orders.getOrderNumber());
+        combinedOrderDTO.setUserId(orders.getUser().getId());
+        combinedOrderDTO.setDate(orders.getDate());
+        combinedOrderDTO.setAddress1(orders.getAddress1());
+        combinedOrderDTO.setAddress2(orders.getAddress2());
+        combinedOrderDTO.setProvince(orders.getProvince());
+        combinedOrderDTO.setCity(orders.getCity());
+        combinedOrderDTO.setZipCode(orders.getZipCode());
+        combinedOrderDTO.setCardHolder(orders.getCardHolder());
+        combinedOrderDTO.setStatus(orders.getStatus().name());
+        combinedOrderDTO.setCost(orders.getCost());
+        combinedOrderDTO.setCard(orders.getCard());
+        combinedOrderDTO.setOrderProducts(orderProducts);
+        combinedOrderDTO.setProductDetails(productDetails);
+
+        return combinedOrderDTO;
     }
 
     @Transactional

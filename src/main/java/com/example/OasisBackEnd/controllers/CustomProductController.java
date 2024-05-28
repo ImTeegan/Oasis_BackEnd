@@ -44,8 +44,9 @@ public class CustomProductController {
     public CustomProductDTO changeCustomProductContextType(
             @PathVariable Integer customProductId,
             @RequestParam String newContextType,
+            @RequestParam String name,
             Authentication authentication) {
-        return customProductService.changeCustomProductContextType(customProductId, newContextType, authentication);
+        return customProductService.changeCustomProductContextType(customProductId, newContextType, name, authentication);
     }
 
     @DeleteMapping("/{customProductId}/removeItem/{productId}")

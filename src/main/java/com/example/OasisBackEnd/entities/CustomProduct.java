@@ -13,6 +13,17 @@ public class CustomProduct {
     @SequenceGenerator(name = "custom_product_seq", sequenceName = "custom_product_seq", allocationSize = 1, initialValue = 100000)
     private Integer id;
 
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @Column(name = "context_id", nullable = false)
     private Integer contextId;
 

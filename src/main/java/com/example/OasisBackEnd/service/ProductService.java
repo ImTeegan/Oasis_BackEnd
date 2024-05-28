@@ -44,9 +44,11 @@ public class ProductService {
         productRepository.findAll().forEach(products::add);
 
         return products.stream()
+                .filter(product -> "Product".equals(product.getType())) // Filtrar productos con type "Product"
                 .map(this::convertToProductDTO)
                 .collect(Collectors.toList());
     }
+
 
     public Page<ProductDTO> getProducts(String name, List<String> categories, String sort, int page, int size) {
         Pageable pageable;

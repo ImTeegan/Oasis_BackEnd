@@ -311,6 +311,7 @@ public class WishlistService {
         customProducts.forEach(customProduct -> {
             customProduct.setContextType(ContextCustomProduct.SHOPPINGCART);
             customProduct.setContextId(shoppingCart.getId());
+            //customProduct.setName();
             customProductRepository.save(customProduct);
             shoppingCart.setTotal(shoppingCart.getTotal() + (customProduct.getTotalCost()) * customProduct.getQuantity());
         });
@@ -350,6 +351,7 @@ public class WishlistService {
         List<CustomProduct> customProducts = customProductRepository.findByContextTypeAndContextId(ContextCustomProduct.WISHLIST, wishList.getId());
 
         customProducts.forEach(customProduct -> {
+            logger.info("Saving name: " + customProduct.getName());
             customProduct.setContextType(ContextCustomProduct.SHOPPINGCART);
             customProduct.setContextId(shoppingCart.getId());
             customProductRepository.save(customProduct);
